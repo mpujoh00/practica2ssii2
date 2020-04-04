@@ -65,7 +65,7 @@ public class main {
                 nif = n.concat(nif.substring(1));
             }
             
-            String numNif = nif.substring(0, 8);
+            String numNif = nif.substring(0,8);
             
             int num = Integer.parseInt(numNif);
             int resto = num%23;
@@ -149,6 +149,5 @@ public class main {
         
         return res;
     }
-    
-}
 
+}
