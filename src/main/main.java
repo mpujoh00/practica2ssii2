@@ -26,7 +26,7 @@ public class main {
      */
     public static void main(String[] args) {
         
-        String res = validaLetra("44435629K");
+        String res = validaLetra("X1234567P");
         
         if(res == null){
             System.out.println("El NIF es correcto");
@@ -52,15 +52,15 @@ public class main {
             String firstChar = nif.substring(0,1);
             String n = null;
             
-            if(firstChar == "X"){
+            if(firstChar.equals("X")){
                 n = "0";
                 nif = n.concat(nif.substring(1));
             }
-            else if(firstChar == "Y"){
+            else if(firstChar.equals("Y")){
                 n = "1";
                 nif = n.concat(nif.substring(1));
             }
-            else if(firstChar == "Z"){
+            else if(firstChar.equals("Z")){
                 n = "2";
                 nif = n.concat(nif.substring(1));
             }

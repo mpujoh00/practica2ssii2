@@ -28,7 +28,9 @@ public class excel {
             excel = new XSSFWorkbook(archivo);
                
         }
-        catch(Exception e){}
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
     
     public void updateCategorias(){
