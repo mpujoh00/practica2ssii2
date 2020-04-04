@@ -22,7 +22,9 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -42,69 +44,153 @@ public class xml {
     
     public xml() {
         
-        //ArrayList duplicados = new ArrayList();
-        ArrayList idFila = new ArrayList();
-        ArrayList nombre = new ArrayList();
-        ArrayList primerApellido = new ArrayList();
-        ArrayList segundoApellido = new ArrayList();
-        ArrayList empresa = new ArrayList();
-        ArrayList categoria = new ArrayList();
+        excel exc = new excel();
+        excel = exc.getExcel();
+        
+        ArrayList<ArrayList<String>> trabajadores = new ArrayList(); // un arraylist para cada trabajador
         
         try {
-            FileInputStream archivo = new FileInputStream(new File(rutaArchivo));
-            excel = new XSSFWorkbook(archivo);
-            
             // coge la hoja de trabajadores
             hoja = excel.getSheetAt(0);
             
             int numeroFilas = hoja.getLastRowNum();
-            boolean blanco = false;
+            ArrayList<ArrayList<String>> nifs = new ArrayList(); // mejor que un string (no sabemos la longitud)
             
-            String[] nif = new String[numeroFilas+1];
-            
-            //Busca las celdas en blanco
-            for(int i = 0; i < numeroFilas; i++){
+            // igual habría que eliminar las filas en blanco
+            //Busca las celdas en blanco 
+            for(int i = 1; i < numeroFilas; i++){ // empieza en la 2a fila
                 
                 Row fila = hoja.getRow(i);
                 Cell celda = fila.getCell(7); // selecciona la casilla correspondiente al NIF/NIE
-                
-                if(celda == null){
+                                
+                if((celda == null || celda.getCellType() == CellType.BLANK || StringUtils.isBlank(celda.toString())) && !filaVacia(fila)){
      
-                    idFila.add(Integer.toString(i+1));
-                    nombre.add(fila.getCell(4).getStringCellValue()); // da nullpointerexception porque hay celdas vacías
-                    primerApellido.add(fila.getCell(5).getStringCellValue());
-                    segundoApellido.add(fila.getCell(6).getStringCellValue());
-                    empresa.add(fila.getCell(1).getStringCellValue());
-                    categoria.add(fila.getCell(2).getStringCellValue());
+                    trabajadores.add(new ArrayList());
                     
-                    blanco = true;
+                    trabajadores.get(trabajadores.size()-1).add(Integer.toString(i+1));
                     
-                } else {
-                    nif[i] = celda.getStringCellValue();
+                    Cell aux = fila.getCell(4); // Nombre
+                    
+                    if(aux != null){
+                        trabajadores.get(trabajadores.size()-1).add(aux.getStringCellValue());
+                    }
+                    else{
+                        trabajadores.get(trabajadores.size()-1).add("");
+                    }
+                    
+                    aux = fila.getCell(5); // Apellido 1
+                    
+                    if(aux != null){
+                        trabajadores.get(trabajadores.size()-1).add(aux.getStringCellValue());
+                    }
+                    else{
+                        trabajadores.get(trabajadores.size()-1).add("");
+                    }
+                    
+                    aux = fila.getCell(6); // Apellido 2
+                    
+                    if(aux != null){
+                        trabajadores.get(trabajadores.size()-1).add(aux.getStringCellValue());
+                    }
+                    else{
+                        trabajadores.get(trabajadores.size()-1).add("");
+                    }
+                    
+                    aux = fila.getCell(1); // Empresa
+                    
+                    if(aux != null){
+                        trabajadores.get(trabajadores.size()-1).add(aux.getStringCellValue());
+                    }
+                    else{
+                        trabajadores.get(trabajadores.size()-1).add("");
+                    }
+                    
+                    aux = fila.getCell(2); // Categoría
+                    
+                    if(aux != null){
+                        trabajadores.get(trabajadores.size()-1).add(aux.getStringCellValue());
+                    }
+                    else{
+                        trabajadores.get(trabajadores.size()-1).add("");
+                    }
+                    
+                } else if(!filaVacia(fila)){
+                    
+                    nifs.add(new ArrayList());
+                    nifs.get(nifs.size()-1).add(celda.getStringCellValue());
+                    nifs.get(nifs.size()-1).add(Integer.toString(i+1));
+                    nifs.get(nifs.size()-1).add("");
                 }
             }
             
             //Busca duplicados
-            for(int i = 0; i < numeroFilas; i++) {
-                for(int j = 0; j < numeroFilas; j++){
+            for(int i = 0; i < nifs.size()-1; i++) {
+                for(int j = 0; j < nifs.size()-1; j++){
                     
-                    if(i != j && nif[i].equals(nif[j]) && !blanco){
-                        //duplicados.add(nif[i]);
-                        idFila.add(Integer.toString(i+1));
+                    if(i != j && nifs.get(i).get(0).equals(nifs.get(j).get(0)) && nifs.get(i).get(2).equals("duplicado") && nifs.get(j).get(2).equals("")){
                         
-                        Row fila = hoja.getRow(i);
-                        nombre.add(fila.getCell(4).getStringCellValue());
-                        primerApellido.add(fila.getCell(5).getStringCellValue());
-                        segundoApellido.add(fila.getCell(6).getStringCellValue());
-                        empresa.add(fila.getCell(1).getStringCellValue());
-                        categoria.add(fila.getCell(2).getStringCellValue());
+                        nifs.get(j).set(2, "duplicado");
                         
-                        // habría que controlar que no se metiesen los dos
+                    }else if(i != j && nifs.get(i).get(0).equals(nifs.get(j).get(0)) && nifs.get(i).get(2).equals("") && nifs.get(j).get(2).equals("")){ //  && !blanco
+                                                
+                        Row fila = hoja.getRow(Integer.parseInt(nifs.get(i).get(1))-1);
+                        
+                        trabajadores.add(new ArrayList());
+
+                        trabajadores.get(trabajadores.size()-1).add(nifs.get(i).get(1));
+
+                        Cell aux = fila.getCell(4); // Nombre
+
+                        if(aux != null){
+                            trabajadores.get(trabajadores.size()-1).add(aux.getStringCellValue());
+                        }
+                        else{
+                            trabajadores.get(trabajadores.size()-1).add("");
+                        }
+
+                        aux = fila.getCell(5); // Apellido 1
+
+                        if(aux != null){
+                            trabajadores.get(trabajadores.size()-1).add(aux.getStringCellValue());
+                        }
+                        else{
+                            trabajadores.get(trabajadores.size()-1).add("");
+                        }
+
+                        aux = fila.getCell(6); // Apellido 2
+
+                        if(aux != null){
+                            trabajadores.get(trabajadores.size()-1).add(aux.getStringCellValue());
+                        }
+                        else{
+                            trabajadores.get(trabajadores.size()-1).add("");
+                        }
+
+                        aux = fila.getCell(1); // Empresa
+
+                        if(aux != null){
+                            trabajadores.get(trabajadores.size()-1).add(aux.getStringCellValue());
+                        }
+                        else{
+                            trabajadores.get(trabajadores.size()-1).add("");
+                        }
+
+                        aux = fila.getCell(2); // Categoría
+
+                        if(aux != null){
+                            trabajadores.get(trabajadores.size()-1).add(aux.getStringCellValue());
+                        }
+                        else{
+                            trabajadores.get(trabajadores.size()-1).add("");
+                        }
+                        
+                        nifs.get(i).set(2, "duplicado");
+                        nifs.get(j).set(2, "duplicado");
                     }
                 }
             }
             
-            creaFicheroErrores(idFila, nombre, primerApellido, segundoApellido, empresa, categoria);
+            creaFicheroErrores(trabajadores);
        
         } catch (Exception e) {
             e.printStackTrace();
@@ -113,51 +199,60 @@ public class xml {
         System.out.println("terminao.");
     }
     
-    public static void creaFicheroErrores(ArrayList idFila, ArrayList nombre, ArrayList primerApellido, ArrayList segundoApellido, ArrayList empresa, ArrayList categoria) {
+    public static void creaFicheroErrores(ArrayList<ArrayList<String>> trabajadores) {
         
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-
-            //Elemento raíz
             Document documento = docBuilder.newDocument();
             
+            //Elemento raíz
             Element raiz = documento.createElement("trabajadores");
+            documento.appendChild(raiz);
             
-            //Primer elemento
-            Element trabajador = documento.createElement("trabajador");
-            raiz.appendChild(trabajador);
-            
-            Attr id = documento.createAttribute("id");
-            id.setValue("Trabajador" + idFila);
-            trabajador.setAttributeNode(id);
-            
-            Attr nom = documento.createAttribute("nombre");
-            nom.setValue("Nombre" + nombre);
-            trabajador.setAttributeNode(nom);
-            
-            Attr apellido1 = documento.createAttribute("apellido1");
-            apellido1.setValue("Primer apellido" + primerApellido);
-            trabajador.setAttributeNode(apellido1);
-            
-            Attr apellido2 = documento.createAttribute("apellido2");
-            apellido2.setValue("Segundo apellido" + segundoApellido);
-            trabajador.setAttributeNode(apellido2);
-            
-            Attr emp = documento.createAttribute("empresa");
-            emp.setValue("Empresa" + empresa);
-            trabajador.setAttributeNode(emp);
-            
-            Attr cat = documento.createAttribute("categoria");
-            emp.setValue("Categoria" + categoria);
-            trabajador.setAttributeNode(cat);
+            // crea los elementos trabajadores
+            for(ArrayList<String> t: trabajadores){
+                
+                Element trabajador = documento.createElement("trabajador");
+                raiz.appendChild(trabajador);
+
+                Attr id = documento.createAttribute("id");
+                id.setValue(t.get(0));
+                trabajador.setAttributeNode(id);
+
+                Element nombre = documento.createElement("nombre");
+                nombre.appendChild(documento.createTextNode(t.get(1)));
+                trabajador.appendChild(nombre);
+                
+                String apell = "";
+                if(!t.get(2).equals("") && t.get(3).equals("")){
+                    apell = t.get(2);
+                }
+                else if(t.get(2).equals("") && !t.get(3).equals("")){
+                    apell = t.get(3);
+                }
+                else if(!t.get(2).equals("") && !t.get(3).equals("")){
+                    apell = t.get(2) + " " + t.get(3);
+                }
+                
+                Element apellidos = documento.createElement("apellidos");
+                apellidos.appendChild(documento.createTextNode(apell));
+                trabajador.appendChild(apellidos);
+                
+                Element empresa = documento.createElement("empresa");
+                empresa.appendChild(documento.createTextNode(t.get(4)));
+                trabajador.appendChild(empresa);
+                
+                Element categoria = documento.createElement("categoria");
+                categoria.appendChild(documento.createTextNode(t.get(5)));
+                trabajador.appendChild(categoria);
+            }
             
             //Se escribe el contenido del xml en un archivo
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource source = new DOMSource(documento);
-            StreamResult result = new StreamResult(new File("/resources/Errores.xml"));
-            
+            StreamResult result = new StreamResult(new File("./src/resources/Errores.xml"));    
             transformer.transform(source, result);
             
         } catch (ParserConfigurationException pce) {
@@ -168,4 +263,20 @@ public class xml {
         }
     }
 
+    private static boolean filaVacia(Row fila){
+        
+        if (fila == null) {
+            return true;
+        }
+        if (fila.getLastCellNum() <= 0) {
+            return true;
+        }
+        for (int cellNum = fila.getFirstCellNum(); cellNum < fila.getLastCellNum(); cellNum++) {
+            Cell celda = fila.getCell(cellNum);
+            if (celda != null && celda.getCellType() != CellType.BLANK && StringUtils.isNotBlank(celda.toString())) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

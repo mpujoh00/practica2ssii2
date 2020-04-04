@@ -18,7 +18,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class excel {
     
-    String rutaArchivo = "/resources/SistemasInformacionII.xlsx";
+    String rutaArchivo = "./src/resources/SistemasInformacionII.xlsx";
     XSSFWorkbook excel;
     
     public excel(){
@@ -47,5 +47,10 @@ public class excel {
             
             fila = iteradorFilas.next();
         }
+    }
+    
+    public XSSFWorkbook getExcel(){
+        
+        return this.excel;
     }
 }
