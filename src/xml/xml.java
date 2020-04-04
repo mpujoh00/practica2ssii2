@@ -36,7 +36,7 @@ import org.w3c.dom.Element;
  */
 public class xml {
     
-    String rutaArchivo = "/resources/SistemasInformacionII.xlsx";
+    String rutaArchivo = "./src/resources/SistemasInformacionII.xlsx";
     XSSFWorkbook excel;
     XSSFSheet hoja;
     
@@ -54,8 +54,7 @@ public class xml {
             FileInputStream archivo = new FileInputStream(new File(rutaArchivo));
             excel = new XSSFWorkbook(archivo);
             
-        } catch (Exception e) {}
-            
+            // coge la hoja de trabajadores
             hoja = excel.getSheetAt(0);
             
             int numeroFilas = hoja.getLastRowNum();
@@ -67,12 +66,12 @@ public class xml {
             for(int i = 0; i < numeroFilas; i++){
                 
                 Row fila = hoja.getRow(i);
-                Cell celda = fila.getCell(7);
+                Cell celda = fila.getCell(7); // selecciona la casilla correspondiente al NIF/NIE
                 
                 if(celda == null){
      
                     idFila.add(Integer.toString(i+1));
-                    nombre.add(fila.getCell(4).getStringCellValue());
+                    nombre.add(fila.getCell(4).getStringCellValue()); // da nullpointerexception porque hay celdas vacías
                     primerApellido.add(fila.getCell(5).getStringCellValue());
                     segundoApellido.add(fila.getCell(6).getStringCellValue());
                     empresa.add(fila.getCell(1).getStringCellValue());
@@ -81,7 +80,6 @@ public class xml {
                     blanco = true;
                     
                 } else {
-                    
                     nif[i] = celda.getStringCellValue();
                 }
             }
@@ -100,12 +98,19 @@ public class xml {
                         segundoApellido.add(fila.getCell(6).getStringCellValue());
                         empresa.add(fila.getCell(1).getStringCellValue());
                         categoria.add(fila.getCell(2).getStringCellValue());
+                        
+                        // habría que controlar que no se metiesen los dos
                     }
                 }
             }
             
             creaFicheroErrores(idFila, nombre, primerApellido, segundoApellido, empresa, categoria);
        
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+           
+        System.out.println("terminao.");
     }
     
     public static void creaFicheroErrores(ArrayList idFila, ArrayList nombre, ArrayList primerApellido, ArrayList segundoApellido, ArrayList empresa, ArrayList categoria) {
@@ -146,7 +151,6 @@ public class xml {
             Attr cat = documento.createAttribute("categoria");
             emp.setValue("Categoria" + categoria);
             trabajador.setAttributeNode(cat);
-            
             
             //Se escribe el contenido del xml en un archivo
             TransformerFactory transformerFactory = TransformerFactory.newInstance();

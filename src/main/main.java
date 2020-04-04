@@ -14,6 +14,7 @@ import clases.Trabajadorbbdd;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import xml.xml;
 
 /**
  *
@@ -26,7 +27,7 @@ public class main {
      */
     public static void main(String[] args) {
         
-        String res = validaLetra("X1234567P");
+        /*String res = validaLetra("X1234567P");
         
         if(res == null){
             System.out.println("El NIF es correcto");
@@ -36,8 +37,12 @@ public class main {
         }
         else{
             System.out.println("El NIF no es correcto, la letra correcta es: " + res);
-        }
+        }*/
+
+        System.out.println("starting...");
         
+        xml xml = new xml();
+                
     }
         
     private static String validaLetra(String nif){
