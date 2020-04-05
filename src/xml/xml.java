@@ -7,17 +7,11 @@ package xml;
 
 import excel.excel;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -41,29 +35,32 @@ public class xml {
     String rutaArchivo = "./src/resources/SistemasInformacionII.xlsx";
     XSSFWorkbook excel;
     XSSFSheet hoja;
+    excel exc;
     
     public xml() {
         
-        excel exc = new excel();
+        exc = new excel();
         excel = exc.getExcel();
         
-        ArrayList<ArrayList<String>> trabajadores = new ArrayList(); // un arraylist para cada trabajador
+    }
+    
+    public void creaFicheroErrores() {
         
         try {
+            ArrayList<ArrayList<String>> trabajadores = new ArrayList(); // un arraylist para cada trabajador
+        
             // coge la hoja de trabajadores
             hoja = excel.getSheetAt(0);
             
-            int numeroFilas = hoja.getLastRowNum();
             ArrayList<ArrayList<String>> nifs = new ArrayList(); // mejor que un string (no sabemos la longitud)
             
-            // igual habría que eliminar las filas en blanco
             //Busca las celdas en blanco 
-            for(int i = 1; i < numeroFilas; i++){ // empieza en la 2a fila
+            for(int i = 1; i < hoja.getLastRowNum(); i++){ // empieza en la 2a fila
                 
                 Row fila = hoja.getRow(i);
                 Cell celda = fila.getCell(7); // selecciona la casilla correspondiente al NIF/NIE
                                 
-                if((celda == null || celda.getCellType() == CellType.BLANK || StringUtils.isBlank(celda.toString())) && !filaVacia(fila)){
+                if((celda == null || celda.getCellType() == CellType.BLANK || StringUtils.isBlank(celda.toString())) && !exc.filaVacia(fila)){
      
                     trabajadores.add(new ArrayList());
                     
@@ -114,7 +111,7 @@ public class xml {
                         trabajadores.get(trabajadores.size()-1).add("");
                     }
                     
-                } else if(!filaVacia(fila)){
+                } else if(!exc.filaVacia(fila)){
                     
                     nifs.add(new ArrayList());
                     nifs.get(nifs.size()-1).add(celda.getStringCellValue());
@@ -190,18 +187,8 @@ public class xml {
                 }
             }
             
-            creaFicheroErrores(trabajadores);
-       
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-           
-        System.out.println("terminao.");
-    }
-    
-    public static void creaFicheroErrores(ArrayList<ArrayList<String>> trabajadores) {
-        
-        try {
+            // crea el archivo xml
+            
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             Document documento = docBuilder.newDocument();
@@ -261,22 +248,5 @@ public class xml {
         } catch (TransformerException tfe) {
             tfe.printStackTrace();
         }
-    }
-
-    private static boolean filaVacia(Row fila){
-        
-        if (fila == null) {
-            return true;
-        }
-        if (fila.getLastCellNum() <= 0) {
-            return true;
-        }
-        for (int cellNum = fila.getFirstCellNum(); cellNum < fila.getLastCellNum(); cellNum++) {
-            Cell celda = fila.getCell(cellNum);
-            if (celda != null && celda.getCellType() != CellType.BLANK && StringUtils.isNotBlank(celda.toString())) {
-                return false;
-            }
-        }
-        return true;
     }
 }
