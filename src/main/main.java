@@ -30,10 +30,12 @@ public class main {
         
         excel exc = new excel();
         exc.corrigeNifs();
+        exc.corrigeDigitosDeControl();
         exc.close();
     
         xml xml = new xml();
         xml.creaFicheroErrores();
+        
     }
     
 }
