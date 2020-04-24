@@ -18,23 +18,25 @@ import java.util.Set;
 import xml.xml;
 
 /**
- *
- * @author maybeitsmica
+ * @author Micaela Pujol Higueras
+ * @author Silvia Matilla García
  */
 public class main {
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) {        
         
         excel exc = new excel();
         exc.corrigeNifs();
         exc.corrigeDigitosDeControl();
+        exc.iban();
         exc.close();
     
         xml xml = new xml();
         xml.creaFicheroErrores();
+        xml.creaFicheroErroresCCC();
         
     }
     
